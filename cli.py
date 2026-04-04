@@ -6,6 +6,7 @@ from appi_claw.config import load_config
 from appi_claw.platforms.base import Listing
 from appi_claw.draft_gen import generate_draft
 from appi_claw.telegram_bot import send_approval_request
+from appi_claw.sheets import log_application
 
 app = typer.Typer(
     name="appi-claw",
@@ -52,10 +53,13 @@ def apply(
     if decision == "apply":
         result = asyncio.run(_run_adapter(listing, draft_text, config, dry_run))
         typer.echo(f"  Result: {result.status} — {result.message}")
+        _log(config, company, role, platform, result.status, url, draft_text, result.message)
     elif decision == "draft":
-        typer.echo("  Draft saved. (Sheets logging in Milestone 5)")
+        typer.echo("  Draft saved.")
+        _log(config, company, role, platform, "Draft Sent", url, draft_text, "User chose draft only")
     else:
         typer.echo("  Skipped.")
+        _log(config, company, role, platform, "Skipped", url, draft_text, "User skipped")
 
 
 @app.command()
@@ -83,9 +87,45 @@ def status():
 
 
 @app.command()
-def list_apps():
-    """List pending and completed applications."""
-    typer.echo("[Appi-Claw] No applications logged yet — see Milestone 5.")
+def list_apps(
+    config_path: str = typer.Option(None, "--config", "-c", help="Path to config.json"),
+    limit: int = typer.Option(10, "--limit", "-n", help="Number of recent entries"),
+):
+    """List recent applications from the tracker."""
+    from appi_claw.sheets import _get_worksheet
+    config = load_config(config_path)
+    try:
+        ws = _get_worksheet(config)
+        rows = ws.get_all_values()
+        if len(rows) <= 1:
+            typer.echo("[Appi-Claw] No applications logged yet.")
+            return
+        headers = rows[0]
+        data = rows[1:]
+        recent = data[-limit:] if len(data) > limit else data
+        for row in reversed(recent):
+            line = " | ".join(f"{h}: {v}" for h, v in zip(headers[:5], row[:5]) if v)
+            typer.echo(line)
+    except Exception as e:
+        typer.echo(f"[Appi-Claw] Error reading sheet: {e}")
+
+
+def _log(config: dict, company: str, role: str, platform: str, status: str, url: str, draft: str, notes: str):
+    """Log to Google Sheets, silently skip if it fails."""
+    try:
+        log_application(
+            config,
+            company=company or "Unknown",
+            role=role or "Unknown",
+            platform=platform,
+            status=status,
+            url=url,
+            draft=draft,
+            notes=notes,
+        )
+        typer.echo("  Logged to Google Sheets.")
+    except Exception as e:
+        typer.echo(f"  Warning: Sheets logging failed: {e}")
 
 
 async def _run_adapter(listing: Listing, draft: str, config: dict, dry_run: bool):
