@@ -159,27 +159,28 @@ class InternshalaAdapter(PlatformAdapter):
         except Exception:
             pass  # Non-critical
 
-        # Fill textarea(s) — cover letter / why hire you
+        # Smart form field handling
         try:
-            textareas = page.locator(
-                "textarea.textarea, textarea[name='cover_letter'], "
-                "textarea[placeholder*='cover'], textarea[placeholder*='hire'], "
-                "#cover_letter_textarea, .ql-editor, textarea"
-            )
-            count = await textareas.count()
-            if count > 0:
+            from appi_claw.form_handler import handle_all_fields
+            user_profile = (self._config or {}).get("user_profile", {})
+            await handle_all_fields(page, user_profile, self._config or {}, draft)
+        except Exception as e:
+            # Fallback: fill first visible textarea with draft
+            try:
+                textareas = page.locator("textarea:visible")
+                count = await textareas.count()
                 for i in range(count):
                     ta = textareas.nth(i)
                     if await ta.is_visible():
                         await ta.fill(draft)
                         break
-        except Exception as e:
-            return ApplicationResult(
-                success=False,
-                status="failed",
-                message=f"Error filling form: {e}",
-                draft=draft,
-            )
+            except Exception:
+                return ApplicationResult(
+                    success=False,
+                    status="failed",
+                    message=f"Error filling form: {e}",
+                    draft=draft,
+                )
 
         if dry_run:
             # Take a screenshot for verification

@@ -294,38 +294,20 @@ class LinkedInAdapter(PlatformAdapter):
                 except Exception:
                     pass
 
-            # Fill any visible text areas (additional info, cover letter)
-            textareas = page.locator("textarea:visible")
-            ta_count = await textareas.count()
-            for i in range(ta_count):
-                ta = textareas.nth(i)
-                current = (await ta.input_value()).strip()
-                if not current:
-                    await ta.fill(draft[:500])
-                    await self._human_delay(0.5, 1)
+            # Smart form field handling
+            try:
+                from appi_claw.form_handler import handle_all_fields
+                user_profile = (self._config or {}).get("user_profile", {})
+                await handle_all_fields(page, user_profile, self._config or {}, draft)
+                await self._human_delay(0.5, 1)
+            except Exception:
+                pass
 
-            # Fill any empty required text inputs
-            inputs = page.locator("input[type='text']:visible[required]")
-            inp_count = await inputs.count()
-            for i in range(inp_count):
-                inp = inputs.nth(i)
-                current = (await inp.input_value()).strip()
-                if not current:
-                    # Try to guess based on label
-                    label = await inp.get_attribute("aria-label") or ""
-                    if "phone" in label.lower():
-                        pass  # Skip phone, should be pre-filled
-                    elif "city" in label.lower() or "location" in label.lower():
-                        await inp.fill("Lucknow, India")
-                    elif "year" in label.lower():
-                        await inp.fill("1")
-
-            # Handle dropdowns / select elements
+            # Handle dropdowns / select elements (not covered by handle_all_fields)
             selects = page.locator("select:visible")
             sel_count = await selects.count()
             for i in range(sel_count):
                 sel = selects.nth(i)
-                # Select first non-empty option if nothing selected
                 try:
                     options = sel.locator("option")
                     opt_count = await options.count()
