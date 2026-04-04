@@ -59,7 +59,18 @@ class InternshalaAdapter(PlatformAdapter):
             await page.wait_for_url("**/student/dashboard**", timeout=15000)
             self._logged_in = True
         except Exception:
-            # Check if we're on a different post-login page
+            # Check for CAPTCHA before giving up
+            if self._config:
+                from appi_claw.situation_handler import detect_captcha, handle_captcha
+                if await detect_captcha(page):
+                    result = await handle_captcha(page, page.url, self._config)
+                    if result == "skip":
+                        raise RuntimeError("CAPTCHA not resolved — skipping.")
+                    # User solved it, check if we're logged in now
+                    if "internshala.com" in page.url and "login" not in page.url:
+                        self._logged_in = True
+                        return
+
             if "internshala.com" in page.url and "login" not in page.url:
                 self._logged_in = True
             else:
@@ -123,6 +134,14 @@ class InternshalaAdapter(PlatformAdapter):
             await page.goto(listing.url, wait_until="domcontentloaded")
             await asyncio.sleep(2)
 
+        # Check for CAPTCHA / video after navigation
+        if self._config:
+            from appi_claw.situation_handler import check_page_for_situations
+            situation = await check_page_for_situations(page, page.url, "listing page", self._config)
+            if situation == "skip":
+                return ApplicationResult(success=False, status="failed",
+                    message="Skipped due to CAPTCHA or video question.", draft=draft)
+
         # Click the Apply / Continue button
         try:
             apply_btn = page.locator(
@@ -140,6 +159,13 @@ class InternshalaAdapter(PlatformAdapter):
                     draft=draft,
                 )
         except Exception as e:
+            # Unexpected error — notify user
+            if self._config:
+                from appi_claw.situation_handler import handle_unexpected_error
+                action = await handle_unexpected_error(page, listing.url, "click Apply", str(e), self._config)
+                if action == "skip":
+                    return ApplicationResult(success=False, status="failed",
+                        message=f"Skipped after error: {e}", draft=draft)
             return ApplicationResult(
                 success=False,
                 status="failed",
@@ -159,12 +185,26 @@ class InternshalaAdapter(PlatformAdapter):
         except Exception:
             pass  # Non-critical
 
+        # Check for CAPTCHA / video after clicking Apply
+        if self._config:
+            from appi_claw.situation_handler import check_page_for_situations
+            situation = await check_page_for_situations(page, page.url, "application form", self._config)
+            if situation == "skip":
+                return ApplicationResult(success=False, status="failed",
+                    message="Skipped due to CAPTCHA or video question on form.", draft=draft)
+
         # Smart form field handling
         try:
             from appi_claw.form_handler import handle_all_fields
             user_profile = (self._config or {}).get("user_profile", {})
             await handle_all_fields(page, user_profile, self._config or {}, draft)
         except Exception as e:
+            if self._config:
+                from appi_claw.situation_handler import handle_unexpected_error
+                action = await handle_unexpected_error(page, listing.url, "form filling", str(e), self._config)
+                if action == "skip":
+                    return ApplicationResult(success=False, status="failed",
+                        message=f"Skipped after form error: {e}", draft=draft)
             # Fallback: fill first visible textarea with draft
             try:
                 textareas = page.locator("textarea:visible")

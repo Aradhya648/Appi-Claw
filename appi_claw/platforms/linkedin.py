@@ -106,6 +106,18 @@ class LinkedInAdapter(PlatformAdapter):
             self._logged_in = True
             await self._save_cookies()
         except Exception:
+            # Check for CAPTCHA first
+            if self._config:
+                from appi_claw.situation_handler import detect_captcha, handle_captcha
+                if await detect_captcha(page):
+                    result = await handle_captcha(page, page.url, self._config)
+                    if result == "skip":
+                        raise RuntimeError("CAPTCHA not resolved — skipping.")
+                    if "/feed" in page.url:
+                        self._logged_in = True
+                        await self._save_cookies()
+                        return
+
             # Could be a security challenge
             current = page.url
             if "checkpoint" in current or "challenge" in current:
@@ -209,10 +221,24 @@ class LinkedInAdapter(PlatformAdapter):
                 draft=draft,
             )
 
+        # Check for CAPTCHA / video after opening Easy Apply modal
+        if self._config:
+            from appi_claw.situation_handler import check_page_for_situations
+            situation = await check_page_for_situations(page, listing.url, "Easy Apply modal", self._config)
+            if situation == "skip":
+                return ApplicationResult(success=False, status="failed",
+                    message="Skipped due to CAPTCHA or video question.", draft=draft)
+
         # Handle multi-step Easy Apply modal
         try:
             await self._fill_easy_apply_steps(page, draft, dry_run, listing)
         except Exception as e:
+            if self._config:
+                from appi_claw.situation_handler import handle_unexpected_error
+                action = await handle_unexpected_error(page, listing.url, "Easy Apply form", str(e), self._config)
+                if action == "skip":
+                    return ApplicationResult(success=False, status="failed",
+                        message=f"Skipped after error: {e}", draft=draft)
             return ApplicationResult(
                 success=False,
                 status="failed",
