@@ -36,6 +36,10 @@
       "password": ""
     }
   },
+  "documents": {
+    "resume_path": "~/path/to/resume.pdf",
+    "auto_upload_resume": true
+  },
   "settings": {
     "dry_run": true,
     "approval_timeout_minutes": 30,

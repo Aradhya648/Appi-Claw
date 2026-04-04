@@ -10,8 +10,9 @@ class InternshalaAdapter(PlatformAdapter):
 
     name = "internshala"
 
-    def __init__(self, headless: bool = True):
+    def __init__(self, headless: bool = True, config: dict | None = None):
         self._headless = headless
+        self._config = config
         self._browser: Browser | None = None
         self._page: Page | None = None
         self._pw = None
@@ -146,6 +147,18 @@ class InternshalaAdapter(PlatformAdapter):
                 draft=draft,
             )
 
+        # Handle file uploads (resume, cover letter, transcript)
+        try:
+            from appi_claw.documents import scan_and_handle_uploads
+            if self._config:
+                await scan_and_handle_uploads(
+                    page, draft,
+                    listing.company or "", listing.role or "",
+                    self._config,
+                )
+        except Exception:
+            pass  # Non-critical
+
         # Fill textarea(s) — cover letter / why hire you
         try:
             textareas = page.locator(
@@ -155,7 +168,6 @@ class InternshalaAdapter(PlatformAdapter):
             )
             count = await textareas.count()
             if count > 0:
-                # Fill the first visible textarea
                 for i in range(count):
                     ta = textareas.nth(i)
                     if await ta.is_visible():

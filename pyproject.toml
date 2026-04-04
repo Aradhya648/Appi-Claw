@@ -19,6 +19,7 @@ dependencies = [
     "gspread>=6.0",
     "google-auth>=2.0",
     "typer>=0.24.0",
+    "fpdf2>=2.7",
 ]
 
 [project.scripts]

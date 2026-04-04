@@ -22,8 +22,9 @@ class LinkedInAdapter(PlatformAdapter):
 
     name = "linkedin"
 
-    def __init__(self, headless: bool = True):
+    def __init__(self, headless: bool = True, config: dict | None = None):
         self._headless = headless
+        self._config = config
         self._browser: Browser | None = None
         self._page: Page | None = None
         self._pw = None
@@ -210,7 +211,7 @@ class LinkedInAdapter(PlatformAdapter):
 
         # Handle multi-step Easy Apply modal
         try:
-            await self._fill_easy_apply_steps(page, draft, dry_run)
+            await self._fill_easy_apply_steps(page, draft, dry_run, listing)
         except Exception as e:
             return ApplicationResult(
                 success=False,
@@ -274,11 +275,24 @@ class LinkedInAdapter(PlatformAdapter):
                 draft=draft,
             )
 
-    async def _fill_easy_apply_steps(self, page: Page, draft: str, dry_run: bool):
+    async def _fill_easy_apply_steps(self, page: Page, draft: str, dry_run: bool, listing=None):
         """Navigate through Easy Apply modal steps, filling fields as needed."""
         max_steps = 8
         for step in range(max_steps):
             await self._human_delay(1, 2)
+
+            # Handle file uploads (resume, cover letter, transcript)
+            if self._config:
+                try:
+                    from appi_claw.documents import scan_and_handle_uploads
+                    await scan_and_handle_uploads(
+                        page, draft,
+                        listing.company if listing else "",
+                        listing.role if listing else "",
+                        self._config,
+                    )
+                except Exception:
+                    pass
 
             # Fill any visible text areas (additional info, cover letter)
             textareas = page.locator("textarea:visible")
