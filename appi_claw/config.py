@@ -27,7 +27,7 @@ def load_config(path: str | None = None) -> dict:
 
 def _validate(config: dict) -> None:
     """Check that required keys exist."""
-    required_sections = ["user_profile", "telegram", "anthropic", "google_sheets", "settings"]
+    required_sections = ["user_profile", "telegram", "gemini", "google_sheets", "settings"]
     for section in required_sections:
         if section not in config:
             raise ValueError(f"Missing required config section: '{section}'")
@@ -35,8 +35,8 @@ def _validate(config: dict) -> None:
     if not config["telegram"].get("bot_token") or config["telegram"]["bot_token"] == "YOUR_TELEGRAM_BOT_TOKEN":
         raise ValueError("Set a real Telegram bot_token in config.")
 
-    if not config["anthropic"].get("api_key") or config["anthropic"]["api_key"] == "YOUR_ANTHROPIC_API_KEY":
-        raise ValueError("Set a real Anthropic api_key in config.")
+    if not config["gemini"].get("api_key") or config["gemini"]["api_key"] == "YOUR_GEMINI_API_KEY":
+        raise ValueError("Set a real Gemini api_key in config.")
 
 
 def _expand_paths(config: dict) -> None:

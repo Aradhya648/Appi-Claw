@@ -14,9 +14,9 @@
     "bot_token": "YOUR_TELEGRAM_BOT_TOKEN",
     "user_id": 5147892536
   },
-  "anthropic": {
-    "api_key": "YOUR_ANTHROPIC_API_KEY",
-    "model": "claude-sonnet-4-20250514"
+  "gemini": {
+    "api_key": "YOUR_GEMINI_API_KEY",
+    "model": "gemini-2.5-flash"
   },
   "google_sheets": {
     "key_file": "~/drut-sheets-key.json",
