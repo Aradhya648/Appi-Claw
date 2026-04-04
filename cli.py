@@ -1,9 +1,11 @@
 """Appi-Claw CLI — standalone command-line interface."""
 
+import asyncio
 import typer
 from appi_claw.config import load_config
 from appi_claw.platforms.base import Listing
 from appi_claw.draft_gen import generate_draft
+from appi_claw.telegram_bot import send_approval_request
 
 app = typer.Typer(
     name="appi-claw",
@@ -15,25 +17,44 @@ app = typer.Typer(
 @app.command()
 def apply(
     url: str = typer.Argument(..., help="Listing URL to apply to"),
+    company: str = typer.Option("", "--company", help="Company name"),
+    role: str = typer.Option("", "--role", help="Role title"),
     config_path: str = typer.Option(None, "--config", "-c", help="Path to config.json"),
     dry_run: bool = typer.Option(True, "--dry-run/--live", help="Dry-run mode (default: on)"),
+    skip_approval: bool = typer.Option(False, "--skip-approval", help="Skip Telegram approval"),
 ):
-    """Process a single job/internship listing."""
-    typer.echo(f"[Appi-Claw] Processing: {url}")
-    typer.echo(f"  dry_run={dry_run}")
-    typer.echo("  Full pipeline not yet implemented — see Milestones 3-5.")
-
+    """Process a single job/internship listing through the full pipeline."""
     config = load_config(config_path)
     platform = _detect_platform(url)
-    listing = Listing(url=url, platform=platform)
+    listing = Listing(url=url, company=company, role=role, platform=platform)
 
-    typer.echo(f"  Platform detected: {platform}")
+    typer.echo(f"[Appi-Claw] Processing: {url}")
+    typer.echo(f"  Platform: {platform} | dry_run={dry_run}")
+
+    # Step 1: Generate draft
     typer.echo("  Generating draft...")
-
-    draft = generate_draft(listing, config, platform)
+    draft_text = generate_draft(listing, config, platform)
     typer.echo("\n--- DRAFT ---")
-    typer.echo(draft)
-    typer.echo("--- END DRAFT ---")
+    typer.echo(draft_text)
+    typer.echo("--- END DRAFT ---\n")
+
+    # Step 2: Telegram approval
+    if skip_approval:
+        decision = "apply"
+        typer.echo("  Approval skipped (--skip-approval).")
+    else:
+        typer.echo("  Sending to Telegram for approval...")
+        summary = f"Company: {company or 'Unknown'}\nRole: {role or 'Unknown'}\nPlatform: {platform}\nURL: {url}"
+        decision = asyncio.run(send_approval_request(summary, draft_text, config))
+        typer.echo(f"  Decision: {decision}")
+
+    # Step 3: Act on decision
+    if decision == "apply":
+        typer.echo("  Form filling not yet implemented — see Milestone 4.")
+    elif decision == "draft":
+        typer.echo(f"  Draft saved. (Sheets logging in Milestone 5)")
+    else:
+        typer.echo("  Skipped.")
 
 
 @app.command()
