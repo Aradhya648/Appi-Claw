@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "appi-claw"
+version = "0.2.0"
+description = "Automated job application assistant — draft, approve, apply, log."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+authors = [
+    {name = "Aradhya", email = "Aradhya648@users.noreply.github.com"},
+]
+dependencies = [
+    "google-genai>=1.0",
+    "playwright>=1.58.0",
+    "python-telegram-bot>=22.0",
+    "gspread>=6.0",
+    "google-auth>=2.0",
+    "typer>=0.24.0",
+]
+
+[project.scripts]
+appi-claw = "appi_claw.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/Aradhya648/Appi-Claw"
+
+[tool.setuptools.packages.find]
+include = ["appi_claw*"]

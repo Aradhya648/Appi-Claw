@@ -9,3 +9,4 @@ drut-sheets-key.json
 node_modules/
 dist/
 .playwright/
+appi_claw.egg-info/
