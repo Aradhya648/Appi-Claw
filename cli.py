@@ -50,9 +50,10 @@ def apply(
 
     # Step 3: Act on decision
     if decision == "apply":
-        typer.echo("  Form filling not yet implemented — see Milestone 4.")
+        result = asyncio.run(_run_adapter(listing, draft_text, config, dry_run))
+        typer.echo(f"  Result: {result.status} — {result.message}")
     elif decision == "draft":
-        typer.echo(f"  Draft saved. (Sheets logging in Milestone 5)")
+        typer.echo("  Draft saved. (Sheets logging in Milestone 5)")
     else:
         typer.echo("  Skipped.")
 
@@ -85,6 +86,44 @@ def status():
 def list_apps():
     """List pending and completed applications."""
     typer.echo("[Appi-Claw] No applications logged yet — see Milestone 5.")
+
+
+async def _run_adapter(listing: Listing, draft: str, config: dict, dry_run: bool):
+    """Run the appropriate platform adapter to fill & submit the form."""
+    from appi_claw.platforms.base import ApplicationResult
+
+    platform = listing.platform or "internshala"
+    headless = config["settings"].get("playwright_headless", True)
+
+    if platform == "internshala":
+        from appi_claw.platforms.internshala import InternshalaAdapter
+        adapter = InternshalaAdapter(headless=headless)
+    else:
+        return ApplicationResult(
+            success=False,
+            status="failed",
+            message=f"Platform adapter '{platform}' not yet implemented.",
+        )
+
+    try:
+        creds = config.get("platforms", {}).get(platform, {})
+        await adapter.login(creds)
+
+        # Re-parse listing to get full details if we only had URL
+        if not listing.company:
+            listing = await adapter.parse_listing(listing.url)
+
+        result = await adapter.fill_and_submit(listing, draft, dry_run=dry_run)
+        return result
+    except Exception as e:
+        return ApplicationResult(
+            success=False,
+            status="failed",
+            message=str(e),
+            draft=draft,
+        )
+    finally:
+        await adapter.close()
 
 
 def _detect_platform(url: str) -> str:
