@@ -195,6 +195,9 @@ async def _run_adapter(listing: Listing, draft: str, config: dict, dry_run: bool
     if platform == "internshala":
         from appi_claw.platforms.internshala import InternshalaAdapter
         adapter = InternshalaAdapter(headless=headless)
+    elif platform == "linkedin":
+        from appi_claw.platforms.linkedin import LinkedInAdapter
+        adapter = LinkedInAdapter(headless=headless)
     else:
         return ApplicationResult(
             success=False,
