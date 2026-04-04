@@ -1,0 +1,29 @@
+{
+  "name": "appi-claw",
+  "version": "0.1.0",
+  "description": "Automated job application assistant — applies to listings on Internshala, LinkedIn, Wellfound, and more.",
+  "entry": "appi_claw/openclaw/plugin.py",
+  "tools": [
+    {
+      "name": "appi_claw_process",
+      "description": "Process a job listing through the full pipeline: parse → draft → approve → apply → log.",
+      "parameters": {
+        "listing": {
+          "type": "object",
+          "description": "Listing details: url (required), company, role, platform",
+          "required": ["url"]
+        }
+      }
+    },
+    {
+      "name": "appi_claw_status",
+      "description": "Returns current application queue status.",
+      "parameters": {}
+    },
+    {
+      "name": "appi_claw_list",
+      "description": "Lists all pending and completed applications.",
+      "parameters": {}
+    }
+  ]
+}

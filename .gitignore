@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+config.json
+*.key.json
+drut-sheets-key.json
+.appi-claw/
+node_modules/
+dist/
+.playwright/

@@ -1,0 +1,44 @@
+{
+  "user_profile": {
+    "name": "Aradhya",
+    "degree": "BBA — Strategy & Business Analytics, 3.4 GPA",
+    "skills": ["Python", "Power BI", "Excel", "Data Visualization", "Prompt Engineering", "Business Ops", "Digital Marketing"],
+    "projects": ["Trimly", "lagom-humanizer", "Appi-Claw", "OpenClaw workflows", "Gemma API work", "AI Debate Arena", "Markora"],
+    "experience": "Founder/CEO exposure, GTM, validation",
+    "target_roles": ["Product/Growth at startups", "Founding team generalist", "Business Analyst", "Data Analyst"],
+    "location": "Lucknow, India",
+    "remote_preference": "remote preferred, hybrid OK in NCR/Lucknow",
+    "github": "Aradhya648"
+  },
+  "telegram": {
+    "bot_token": "YOUR_TELEGRAM_BOT_TOKEN",
+    "user_id": 5147892536
+  },
+  "anthropic": {
+    "api_key": "YOUR_ANTHROPIC_API_KEY",
+    "model": "claude-sonnet-4-20250514"
+  },
+  "google_sheets": {
+    "key_file": "~/drut-sheets-key.json",
+    "sheet_id": "196Kvt9DQA62TEXwcLihneNKbjHPkPY5OOJwy1Y6L4JM"
+  },
+  "platforms": {
+    "internshala": {
+      "email": "",
+      "password": ""
+    },
+    "linkedin": {
+      "email": "",
+      "password": ""
+    },
+    "wellfound": {
+      "email": "",
+      "password": ""
+    }
+  },
+  "settings": {
+    "dry_run": true,
+    "approval_timeout_minutes": 30,
+    "playwright_headless": true
+  }
+}
