@@ -75,12 +75,63 @@ def generate_draft(listing: Listing, config: dict, platform: str | None = None) 
     platform = platform or listing.platform or "internshala"
 
     client = genai.Client(api_key=gemini_config["api_key"])
-
     prompt = _build_prompt(listing, user_profile, platform)
 
     response = client.models.generate_content(
         model=gemini_config.get("model", "gemini-2.5-flash"),
         contents=prompt,
+        config=genai.types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            temperature=0.7,
+            max_output_tokens=1024,
+        ),
+    )
+
+    return response.text.strip()
+
+
+def revise_draft(current_draft: str, feedback: str, listing: Listing, config: dict, platform: str | None = None) -> str:
+    """Revise an existing draft based on user feedback.
+
+    Args:
+        current_draft: The draft to revise.
+        feedback: User's feedback (e.g. "make it more fintech-specific").
+        listing: The job/internship listing.
+        config: Full app config.
+        platform: Platform name.
+
+    Returns:
+        The revised draft text.
+    """
+    gemini_config = config["gemini"]
+    user_profile = config["user_profile"]
+    platform = platform or listing.platform or "internshala"
+
+    client = genai.Client(api_key=gemini_config["api_key"])
+
+    revision_prompt = f"""You previously wrote this application draft:
+
+--- DRAFT ---
+{current_draft}
+--- END DRAFT ---
+
+The user wants you to revise it with this feedback:
+"{feedback}"
+
+Candidate profile:
+- Name: {user_profile.get('name', 'N/A')}
+- Degree: {user_profile.get('degree', 'N/A')}
+- Skills: {', '.join(user_profile.get('skills', []))}
+- Projects: {', '.join(user_profile.get('projects', []))}
+- Experience: {user_profile.get('experience', 'N/A')}
+
+Listing: {listing.company or 'Unknown'} — {listing.role or 'Unknown'} ({platform})
+
+Rewrite the draft incorporating the feedback. Keep the same length and platform style."""
+
+    response = client.models.generate_content(
+        model=gemini_config.get("model", "gemini-2.5-flash"),
+        contents=revision_prompt,
         config=genai.types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
             temperature=0.7,

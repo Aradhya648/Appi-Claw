@@ -74,27 +74,34 @@ def apply(
     typer.echo(draft_text)
     typer.echo("--- END DRAFT ---\n")
 
-    # Step 2: Telegram approval
+    # Step 2: Telegram approval + edit loop
     if skip_approval:
         decision = "apply"
+        final_draft = draft_text
         typer.echo("  Approval skipped (--skip-approval).")
     else:
-        typer.echo("  Sending to Telegram for approval...")
+        typer.echo("  Sending to Telegram for approval (Apply / Edit Draft / Skip)...")
         summary = f"Company: {company or 'Unknown'}\nRole: {role or 'Unknown'}\nPlatform: {platform}\nURL: {url}"
-        decision = asyncio.run(send_approval_request(summary, draft_text, config))
+        decision, final_draft = asyncio.run(
+            send_approval_request(summary, draft_text, config, listing=listing, platform=platform)
+        )
         typer.echo(f"  Decision: {decision}")
+        if final_draft != draft_text:
+            typer.echo("\n--- FINAL DRAFT (after edits) ---")
+            typer.echo(final_draft)
+            typer.echo("--- END FINAL DRAFT ---\n")
 
     # Step 3: Act on decision
     if decision == "apply":
-        result = asyncio.run(_run_adapter(listing, draft_text, config, dry_run))
+        result = asyncio.run(_run_adapter(listing, final_draft, config, dry_run))
         typer.echo(f"  Result: {result.status} -- {result.message}")
-        _log(config, company, role, platform, result.status, url, draft_text, result.message)
+        _log(config, company, role, platform, result.status, url, final_draft, result.message)
     elif decision == "draft":
         typer.echo("  Draft saved.")
-        _log(config, company, role, platform, "Draft Sent", url, draft_text, "User chose draft only")
+        _log(config, company, role, platform, "Draft Sent", url, final_draft, "User chose draft only")
     else:
         typer.echo("  Skipped.")
-        _log(config, company, role, platform, "Skipped", url, draft_text, "User skipped")
+        _log(config, company, role, platform, "Skipped", url, final_draft, "User skipped")
 
 
 @app.command()

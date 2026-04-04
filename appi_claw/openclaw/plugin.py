@@ -59,10 +59,11 @@ def appi_claw_process(listing: dict) -> dict:
         f"URL: {url}"
     )
     try:
-        decision = asyncio.run(send_approval_request(summary, draft, config))
+        decision, draft = asyncio.run(
+            send_approval_request(summary, draft, config, listing=listing_obj, platform=platform)
+        )
     except Exception as e:
         decision = "skip"
-        draft_note = f"Telegram approval failed: {e}"
 
     # Step 3: Act on decision
     result_status = "Skipped"
