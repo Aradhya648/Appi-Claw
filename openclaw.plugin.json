@@ -1,29 +1,43 @@
 {
   "name": "appi-claw",
-  "version": "0.1.0",
-  "description": "Automated job application assistant — applies to listings on Internshala, LinkedIn, Wellfound, and more.",
+  "version": "0.2.0",
+  "description": "Automated job application assistant — generates drafts via Gemini, gets Telegram approval, fills forms with Playwright, logs to Google Sheets.",
   "entry": "appi_claw/openclaw/plugin.py",
+  "config_path": "~/.appi-claw/config.json",
   "tools": [
     {
       "name": "appi_claw_process",
-      "description": "Process a job listing through the full pipeline: parse → draft → approve → apply → log.",
+      "description": "Process a job listing through the full pipeline: draft → Telegram approve → apply → log to Sheets. Returns status, decision, draft, and message.",
       "parameters": {
         "listing": {
           "type": "object",
-          "description": "Listing details: url (required), company, role, platform",
+          "description": "Listing details",
+          "properties": {
+            "url": { "type": "string", "description": "Listing URL (required)" },
+            "company": { "type": "string", "description": "Company name" },
+            "role": { "type": "string", "description": "Role / position title" },
+            "platform": { "type": "string", "description": "Platform name (internshala, linkedin, wellfound, cold_email, dm)" },
+            "description": { "type": "string", "description": "Job description text" }
+          },
           "required": ["url"]
         }
       }
     },
     {
       "name": "appi_claw_status",
-      "description": "Returns current application queue status.",
+      "description": "Returns application tracker summary: total count and breakdown by status (Applied, Draft Sent, Skipped, Failed).",
       "parameters": {}
     },
     {
       "name": "appi_claw_list",
-      "description": "Lists all pending and completed applications.",
-      "parameters": {}
+      "description": "Lists recent applications from the Google Sheets tracker. Returns list of dicts with company, role, platform, status, etc.",
+      "parameters": {
+        "limit": {
+          "type": "integer",
+          "description": "Max entries to return (default 10)",
+          "default": 10
+        }
+      }
     }
   ]
 }
