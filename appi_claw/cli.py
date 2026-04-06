@@ -1,3 +1,5 @@
+from appi_claw.dashboard import render_status_dashboard
+from appi_claw.setup import run_setup_wizard
 """Appi-Claw CLI — standalone command-line interface.
 
 Usage after install:
@@ -28,6 +30,8 @@ app = typer.Typer(
 
 @app.command()
 def init(
+    # ── setup wizard ──
+    run_setup_wizard()
     config_path: str = typer.Option(None, "--config", "-c", help="Custom config path"),
 ):
     """Set up Appi-Claw config for first use."""
