@@ -1,28 +1,46 @@
 {
+  "_comment": "Copy this file to ~/.appi-claw/config.json and fill in your own values. All fields marked YOUR_... must be replaced.",
   "user_profile": {
-    "name": "Aradhya",
-    "degree": "BBA — Strategy & Business Analytics, 3.4 GPA",
-    "skills": ["Python", "Power BI", "Excel", "Data Visualization", "Prompt Engineering", "Business Ops", "Digital Marketing"],
-    "projects": ["Trimly", "lagom-humanizer", "Appi-Claw", "OpenClaw workflows", "Gemma API work", "AI Debate Arena", "Markora"],
-    "experience": "Founder/CEO exposure, GTM, validation",
-    "target_roles": ["Product/Growth at startups", "Founding team generalist", "Business Analyst", "Data Analyst"],
-    "location": "Lucknow, India",
-    "remote_preference": "remote preferred, hybrid OK in NCR/Lucknow",
-    "github": "Aradhya648"
+    "_comment": "Your personal profile \u2014 used by the AI to write tailored application drafts.",
+    "name": "YOUR_FULL_NAME",
+    "degree": "YOUR_DEGREE_AND_MAJOR (e.g. B.Tech Computer Science, 3.8 GPA)",
+    "skills": [
+      "Skill 1",
+      "Skill 2",
+      "Skill 3"
+    ],
+    "projects": [
+      "Project 1",
+      "Project 2"
+    ],
+    "experience": "Brief description of your work/internship experience",
+    "target_roles": [
+      "Role Type 1 (e.g. Software Engineer Intern)",
+      "Role Type 2"
+    ],
+    "location": "Your City, Country",
+    "remote_preference": "remote preferred / hybrid OK / on-site only",
+    "github": "YOUR_GITHUB_USERNAME",
+    "portfolio_url": "https://your-portfolio.com",
+    "graduation_year": "2026"
   },
   "telegram": {
+    "_comment": "Create a bot via @BotFather on Telegram. Get your user ID from @userinfobot.",
     "bot_token": "YOUR_TELEGRAM_BOT_TOKEN",
-    "user_id": 5147892536
+    "user_id": 0
   },
   "gemini": {
+    "_comment": "Get a free API key at https://aistudio.google.com/. gemini-2.5-flash is recommended.",
     "api_key": "YOUR_GEMINI_API_KEY",
     "model": "gemini-2.5-flash"
   },
   "google_sheets": {
-    "key_file": "~/drut-sheets-key.json",
-    "sheet_id": "196Kvt9DQA62TEXwcLihneNKbjHPkPY5OOJwy1Y6L4JM"
+    "_comment": "Enable Sheets API in Google Cloud, create service account, share sheet with service account email.",
+    "key_file": "~/path/to/your-service-account-key.json",
+    "sheet_id": "YOUR_GOOGLE_SHEET_ID"
   },
   "platforms": {
+    "_comment": "Credentials for each platform. Leave empty if you don't use that platform.",
     "internshala": {
       "email": "",
       "password": ""
@@ -37,12 +55,18 @@
     }
   },
   "documents": {
-    "resume_path": "~/path/to/resume.pdf",
-    "auto_upload_resume": true
+    "_comment": "resume_path: path to your PDF resume. auto_upload_resume: attach automatically. cover_letter_auto_generate: generate a cover letter for every application.",
+    "resume_path": "~/path/to/your-resume.pdf",
+    "auto_upload_resume": true,
+    "cover_letter_auto_generate": true
   },
   "settings": {
+    "_comment": "dry_run: fill form but don't submit (safe default). approval_timeout_minutes: wait before auto-skip. max_draft_edits: AI re-draft rounds. draft_tone: professional/casual/startup-friendly. draft_length: short/medium/long.",
     "dry_run": true,
     "approval_timeout_minutes": 30,
-    "playwright_headless": true
+    "playwright_headless": true,
+    "max_draft_edits": 5,
+    "draft_tone": "professional",
+    "draft_length": "medium"
   }
 }
