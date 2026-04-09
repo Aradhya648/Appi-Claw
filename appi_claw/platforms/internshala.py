@@ -1,6 +1,7 @@
 """Internshala platform adapter — login, parse listing, fill & submit."""
 
 import asyncio
+import os
 from playwright.async_api import async_playwright, Page, Browser
 from appi_claw.platforms.base import PlatformAdapter, Listing, ApplicationResult
 
@@ -22,6 +23,10 @@ class InternshalaAdapter(PlatformAdapter):
         """Launch browser if not already running."""
         if self._page and not self._page.is_closed():
             return self._page
+
+        # Use Xvfb display if available (WSL2 headless fix)
+        if "DISPLAY" not in os.environ:
+            os.environ["DISPLAY"] = ":99"
 
         self._pw = await async_playwright().start()
         self._browser = await self._pw.chromium.launch(

@@ -35,9 +35,12 @@ class LinkedInAdapter(PlatformAdapter):
             return self._page
 
         self._pw = await async_playwright().start()
+        launch_args = ["--no-sandbox", "--disable-blink-features=AutomationControlled"]
+        if self._headless:
+            launch_args.append("--headless=new")
         self._browser = await self._pw.chromium.launch(
-            headless=self._headless,
-            args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
+            headless=False,
+            args=launch_args,
         )
         context = await self._browser.new_context(
             user_agent=(
