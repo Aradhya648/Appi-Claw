@@ -30,8 +30,6 @@ app = typer.Typer(
 
 @app.command()
 def init(
-    # ── setup wizard ──
-    run_setup_wizard()
     config_path: str = typer.Option(None, "--config", "-c", help="Custom config path"),
 ):
     """Set up Appi-Claw config for first use."""
