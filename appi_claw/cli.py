@@ -209,6 +209,9 @@ async def _run_adapter(listing: Listing, draft: str, config: dict, dry_run: bool
     elif platform == "linkedin":
         from appi_claw.platforms.linkedin import LinkedInAdapter
         adapter = LinkedInAdapter(headless=headless, config=config)
+    elif platform == "shine":
+        from appi_claw.platforms.shine import ShineAdapter
+        adapter = ShineAdapter(headless=headless, config=config)
     else:
         return ApplicationResult(
             success=False,
@@ -245,6 +248,8 @@ def _detect_platform(url: str) -> str:
         return "linkedin"
     elif "wellfound" in url_lower or "angel.co" in url_lower:
         return "wellfound"
+    elif "shine.com" in url_lower:
+        return "shine"
     return "internshala"
 
 
