@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 
+CONFIG_VERSION = "0.2.0"
 DEFAULT_CONFIG_PATH = Path.home() / ".appi-claw" / "config.json"
 
 

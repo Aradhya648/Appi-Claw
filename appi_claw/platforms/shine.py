@@ -1,6 +1,7 @@
 """Shine.com platform adapter — login, parse listing, fill & submit."""
 
 import asyncio
+import json
 import os
 import random
 from pathlib import Path
@@ -65,7 +66,6 @@ class ShineAdapter(PlatformAdapter):
         """Persist session cookies to avoid re-login."""
         if self._page:
             try:
-                import json
                 cookies = await self._page.context.cookies()
                 COOKIES_PATH.parent.mkdir(parents=True, exist_ok=True)
                 COOKIES_PATH.write_text(json.dumps(cookies))
