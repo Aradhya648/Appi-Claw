@@ -22,6 +22,7 @@ def load_config(path: str | None = None) -> dict:
 
     _validate(config)
     _expand_paths(config)
+    config["version"] = CONFIG_VERSION
     return config
 
 
